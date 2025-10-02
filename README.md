@@ -45,16 +45,21 @@ Follow these steps to run the project on your local machine:
 ## 1. Clone the Repository
 
 git clone https://github.com/wicked-heart/Youtube-Media-Toolkit.git
+
 cd yt-website
 
 ## 2. Install Dependencies
 
 - Install Server Dependencies
+
 cd server
+
 npm install
 
 - Install Client Dependencies
+
 cd ../client
+
 npm install
 
 ## 3. Start the Servers
@@ -62,11 +67,17 @@ npm install
 You will need two separate terminals to run backend and frontend simultaneously.
 
 - Terminal 1: Start the Backend Server
+
 cd server
+
 node index.js
+
 The backend server will start at: http://localhost:4000
 
 - Terminal 2: Start the Frontend Client
+
 cd client
+
 npm run dev
+
 The frontend application will be available at: http://localhost:5173
