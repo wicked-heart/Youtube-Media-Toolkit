@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import yt_dlp_wrap from 'yt-dlp-wrap';
 const YTDlpWrap = yt_dlp_wrap.default;
-import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -32,65 +31,52 @@ app.post('/api/process', async (req, res) => {
 
   try {
     const timestamp = new Date().getTime();
-    const downloadedFilePath = path.join(tempDir, `download_${timestamp}.mp4`);
     
     let finalFormat = format;
     if (['gif', 'trimmer', 'sticker'].includes(format)) finalFormat = 'mp4';
     if (format === 'ringtone') finalFormat = 'mp3';
-
+    
     const processedFilePath = path.join(tempDir, `processed_${timestamp}.${finalFormat}`);
 
-    console.log('Starting download...');
-    await ytDlpWrap.execPromise([
+    // --- KEY CHANGE HERE ---
+    const options = [
       youtubeUrl,
-      '--recode-video', 'mp4',
-      '-o', downloadedFilePath,
-    ]);
-    console.log('Download complete.');
-
-    const command = ffmpeg(downloadedFilePath);
+      '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+      '-o', processedFilePath
+    ];
     
     if (['gif', 'trimmer', 'sticker', 'ringtone'].includes(format)) {
       if (!trimTimes) return res.status(400).json({ error: 'Trim times are required.' });
-      command.setStartTime(trimTimes.start).setDuration(calculateDuration(trimTimes.start, trimTimes.end));
-    }
-    
-    if (format === 'mp4') {
-        command.videoCodec('libx264').audioCodec('aac');
-    } else if (format === 'mp3' || format === 'ringtone') {
-        command.noVideo().audioCodec('libmp3lame');
-    } else if (format === 'gif' || format === 'trimmer') {
-        command.videoCodec('libx264').audioCodec('aac').noAudio(); // Muted for GIF
-    } else if (format === 'sticker') {
-        command.videoCodec('libx264').audioCodec('aac').noAudio()
-          .outputOptions([
-            '-vf', 'scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2,fps=15',
-            '-preset', 'fast'
-        ]);
+      options.push('--download-sections', `*${trimTimes.start}-${trimTimes.end}`);
     }
 
-    command
-      .output(processedFilePath)
-      .on('end', () => {
-        console.log('Processing finished.');
-        res.download(processedFilePath, (err) => {
-          if (err) console.error('Error sending file:', err);
-          fs.unlinkSync(downloadedFilePath);
-fs.unlinkSync(processedFilePath);
-          console.log('Temporary files deleted.');
-        });
-      })
-      .on('error', (err) => {
-        console.error('Error during processing:', err.message);
-        fs.unlinkSync(downloadedFilePath);
-        res.status(500).json({ error: 'Failed to process file.' });
-      })
-      .run();
+    if (format === 'mp4' || format === 'trimmer') {
+      options.push('--recode-video', 'mp4');
+    } else if (format === 'mp3' || format === 'ringtone') {
+      options.push('-x', '--audio-format', 'mp3');
+    } else if (format === 'gif') {
+      options.push('--recode-video', 'mp4', '--postprocessor-args', 'ffmpeg:-an -preset fast');
+    } else if (format === 'sticker') {
+      options.push('--recode-video', 'mp4', '--postprocessor-args', 'ffmpeg:-vf "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2,fps=15" -an -preset fast');
+    }
+    
+    console.log('Executing local yt-dlp command with custom user agent...');
+    await ytDlpWrap.execPromise(options);
+
+    console.log('Processing complete.');
+
+    res.download(processedFilePath, (err) => {
+      if (err) console.error('Error sending file:', err);
+      fs.unlink(processedFilePath, (unlinkErr) => {
+        if (unlinkErr) console.error('Error deleting file:', unlinkErr);
+        else console.log('Temporary file deleted.');
+      });
+    });
 
   } catch (error) {
     console.error('--- YT-DLP process failed ---');
     console.error(error.stderr || error.message);
-    res.status(500).json({ error: 'Failed to download video.' });
+    res.status(500).json({ error: 'Failed to process video.' });
   }
 });
 

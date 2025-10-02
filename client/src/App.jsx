@@ -19,14 +19,13 @@ function App() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [trimTimes, setTrimTimes] = useState({ start: '00:00', end: '00:05' });
-  const [warningMessage, setWarningMessage] = useState('');
-  // ADD THIS STATE BACK
   const [postProcessMessage, setPostProcessMessage] = useState(null);
+  const [warningMessage, setWarningMessage] = useState('');
 
   useEffect(() => {
     const duration = calculateDuration(trimTimes.start, trimTimes.end);
     if (selectedOption === 'gif' && duration > 6) {
-      setWarningMessage('Note: For WhatsApp, clips over 6 seconds may not be converted to a GIF.');
+      setWarningMessage('Note: For WhatsApp, clips over 6 seconds may not be shareable as a GIF.');
     } else {
       setWarningMessage('');
     }
@@ -34,12 +33,12 @@ function App() {
 
   const stickerInstructions = (
     <div>
-      <h3>Sticker Created!</h3>
-      <p>Your sticker.webp file has been downloaded. To add it to WhatsApp:</p>
+      <h3>Sticker File Created!</h3>
+      <p>Your MP4 file has been downloaded. To create the sticker:</p>
       <ol>
-        <li>Transfer the file to your phone.</li>
-        <li>Open a free app like "Sticker.ly".</li>
-        <li>Import the file into a new pack and tap "Add to WhatsApp".</li>
+        <li>Transfer the downloaded MP4 file to your phone.</li>
+        <li>Open the "Sticker.ly" app and choose to create a new animated sticker.</li>
+        <li>Select the MP4 file from your gallery and add it to WhatsApp.</li>
       </ol>
     </div>
   );
@@ -68,17 +67,16 @@ function App() {
       let downloadFormat = selectedOption;
       if (['gif', 'trimmer', 'sticker'].includes(selectedOption)) downloadFormat = 'mp4';
       if (selectedOption === 'ringtone') downloadFormat = 'mp3';
-
+      
       link.setAttribute('download', `download.${downloadFormat}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      // This line needs the postProcessMessage state
       if (selectedOption === 'sticker') {
         setPostProcessMessage(stickerInstructions);
       }
-
+      
     } catch (error) {
       console.error('Error sending data to backend:', error);
       alert('An error occurred. Please check the console.');
@@ -86,8 +84,7 @@ function App() {
       setIsLoading(false);
     }
   };
-
-  // ADD THIS FUNCTION BACK
+  
   const handleReset = () => {
     setPostProcessMessage(null);
     setSelectedOption(null);
@@ -100,7 +97,6 @@ function App() {
     <div className="container">
       <header className="app-header"><h1>YouTube Media Toolkit</h1></header>
       <div className="card">
-        {/* ADD THE LOGIC FOR postProcessMessage BACK */}
         {postProcessMessage ? (
           <div className="success-message">
             {postProcessMessage}

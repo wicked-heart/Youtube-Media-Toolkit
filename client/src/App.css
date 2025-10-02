@@ -161,14 +161,29 @@ body {
   padding: 0.5rem;
 }
 
+.success-message {
+  text-align: center;
+}
+
 .success-message h3 {
   font-size: 1.5rem;
-  color: var(--text-primary);
+  color: var(--brand-primary);
+}
+
+.success-message ol {
+  text-align: left;
+  display: inline-block;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.success-message li {
+  margin-bottom: 0.5rem;
 }
 
 .warning-message {
   text-align: center;
   margin-top: 1rem;
-  color: #f59e0b; /* A nice amber color */
+  color: #f59e0b; /* A nice amber color for warnings */
   font-size: 0.9rem;
 }

@@ -3,10 +3,13 @@ import React from 'react';
 function Trimmer({ trimTimes, setTrimTimes }) {
   const handleTimeChange = (e) => {
     const { name, value } = e.target;
-    setTrimTimes(prevTimes => ({
-      ...prevTimes,
-      [name]: value
-    }));
+    // This validation ensures only numbers and colons can be typed
+    if (/^[0-9:]*$/.test(value)) {
+        setTrimTimes(prevTimes => ({
+          ...prevTimes,
+          [name]: value
+        }));
+    }
   };
 
   return (
