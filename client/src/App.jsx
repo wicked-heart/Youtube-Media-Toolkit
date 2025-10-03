@@ -95,7 +95,7 @@ function App() {
 
   return (
     <div className="container">
-      <header className="app-header"><h1>YouTube Media Toolkit</h1></header>
+      <header className="app-header"><h1>Snipify - Your Video Toolkit, Reimagined</h1></header>
       <div className="card">
         {postProcessMessage ? (
           <div className="success-message">
