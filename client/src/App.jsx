@@ -79,7 +79,7 @@ function App() {
       
     } catch (error) {
       console.error('Error sending data to backend:', error);
-      alert('An error occurred. Please check the console.');
+      alert('An error occurred, please try again later.');
     } finally {
       setIsLoading(false);
     }
